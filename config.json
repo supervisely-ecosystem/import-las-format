@@ -4,7 +4,7 @@
   "categories": [
     "Import"
   ],
-  "description": "Import Cityscapes to Supervisely",
+  "description": "Import LAS/LAZ format files to Supervisely 3D point cloud labeling tool",
   "docker_image": "supervisely/base-py-sdk:6.1.89",
   "main_script": "src/main.py",
   "modal_template": "src/modal.html",
@@ -12,12 +12,11 @@
     "projectName": ""
   },
   "task_location": "workspace_tasks",
-  "icon": "https://i.imgur.com/UzgppSx.png",
+  "icon": "https://i.imgur.com/fywmAnn.png",
   "icon_background": "#FFFFFF",
   "context_menu": {
     "target": [
-      "files_folder",
-      "files_file"
+      "files_folder"
     ]
   }
 }
