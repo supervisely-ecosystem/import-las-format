@@ -42,3 +42,5 @@ File format designed for the interchange and archiving of lidar point cloud data
 **Note:** Your project will be placed to the current workspace with selected name.
 
 <img src="https://i.imgur.com/UF2VPis.png"/>
+
+###### Image credit: https://library.carleton.ca/guides/help/lidar-formats
