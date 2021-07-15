@@ -1,5 +1,5 @@
 <div align="center" markdown>
-<img src="https://i.imgur.com/ok6t92G.png"/>
+<img src="https://i.imgur.com/T8nscu4.png"/>
 
 
 
@@ -31,17 +31,14 @@ File format designed for the interchange and archiving of lidar point cloud data
 ## How To Run 
 **Step 1**: Add app to your team from [Ecosystem](https://ecosystem.supervise.ly/apps/import-las-format) if it is not there.
 
-**Step 2**: Open images project click on `Apps` tab and run `ilastik pixel classification` app.
+**Step 2**:  Go to Current Team -> `Files` page, right-click on the directory with `.las/.laz` files and choose Run App -> `Import LAS format`.
 
-<img src="https://i.imgur.com/4mqzfp8.png"/>
+<img src="https://i.imgur.com/V63kbCP.png"/>
 
-**Step 3**: Modal window
+**Step 3**: Type name of the resulting project into text input and press `Run` button.
 
-**1.** In the modal window select whether you want to use a previously saved project with a trained classifier or create a new one.
+<img src="https://i.imgur.com/BgLvRct.png" width="600px"/>
 
-**2.** Depending on the selected mode select classes that you want to segment (at least 2 classes must be selected) or paste a path from Team Files to your previously saved project.
+**Note:** Your project will be placed to the current workspace with selected name.
 
-<img src="https://i.imgur.com/B4RUqnj.png" width="600px"/>
-
-## How to use
-
+<img src="https://i.imgur.com/UF2VPis.png"/>
