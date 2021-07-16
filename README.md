@@ -27,6 +27,24 @@
 
 File format designed for the interchange and archiving of lidar point cloud data. It is an open, binary format specified by the American Society for Photogrammetry and Remote Sensing (ASPRS). The format is widely used and regarded as an industry standard for lidar data.
 
+#### Structure of directory have to be the following:   
+```
+.
+├── directory_with_las_files
+    ├── file_0000001.las  # 
+    ├── file_0000001.las  # Will be placed to the 1st dataset automatically
+    ├── file_0000001.las  # 
+    ├── las_dataset_1
+    |	├── file_0000001.las
+    |	├── file_0000002.las
+    |	├── ...
+    ├── las_dataset_2
+    |	├── file_0000001.laz
+    |	├── file_0000002.las
+    |	├── ...
+    └── ...
+```
+**Note:** if there are no dataset folder in the main directory, all `.las/.laz` files inside main directory will be placed into created dataset.
 
 ## How To Run 
 **Step 1**: Add app to your team from [Ecosystem](https://ecosystem.supervise.ly/apps/import-las-format) if it is not there.
