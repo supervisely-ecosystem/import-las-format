@@ -40,6 +40,7 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
             if len(datasets) == 0:
                 sly.fs.mkdir(os.path.join(local_save_dir, "ds0"))
                 shutil.move(file, os.path.join(local_save_dir, "ds0"))
+                datasets = [d.path for d in os.scandir(local_save_dir) if d.is_dir()]
             else:
                 shutil.move(file, datasets[0])
 
