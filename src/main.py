@@ -1,7 +1,6 @@
 import os
-import shutil
-
 import laspy
+import shutil
 import numpy as np
 import globals as g
 import open3d as o3d
@@ -44,7 +43,6 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
             else:
                 shutil.move(file, datasets[0])
 
-
     for dataset in datasets:
         created_dataset = g.api.dataset.create(project.id, os.path.basename(os.path.normpath(dataset)), change_name_if_conflict=True)
         g.my_app.logger.info(f"New dataset has been created: {created_dataset.name}")
@@ -59,8 +57,6 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
                 sly.fs.silent_remove(input_path)
                 api.pointcloud.upload_path(created_dataset.id, name=get_file_name(ds_file_name) + ".pcd", path=output_path)
                 progress.iter_done_report()
-
-        #upload_info = api.pointcloud.upload_paths(created_dataset.id, names=pc_names, paths=pc_paths)
         g.my_app.logger.info(f'LAS files has been successfully uploaded to dataset: {created_dataset.name}')
 
     g.my_app.stop()
