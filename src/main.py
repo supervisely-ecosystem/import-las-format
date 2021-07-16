@@ -49,7 +49,7 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
         g.my_app.logger.info(f"New dataset has been created: {created_dataset.name}")
 
         ds_file_paths = os.listdir(dataset)
-        progress = sly.Progress(f"Processing {created_dataset.name} dataset", len(ds_file_paths), sly.logger)
+        progress = sly.Progress(f"Processing {created_dataset.name} dataset files:", len(ds_file_paths), sly.logger)
         for ds_file_name in ds_file_paths:
             if ds_file_name.endswith(".las") or ds_file_name.endswith(".laz"):
                 input_path = os.path.join(dataset, ds_file_name)
