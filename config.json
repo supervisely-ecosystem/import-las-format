@@ -5,7 +5,7 @@
     "Import"
   ],
   "description": "Import Cityscapes to Supervisely",
-  "docker_image": "supervisely/base-py-sdk:6.1.89",
+  "docker_image": "supervisely/import-ply-raw:6.1.4",
   "main_script": "src/main.py",
   "modal_template": "src/modal.html",
   "modal_template_state": {

@@ -6,7 +6,7 @@ import numpy as np
 import globals as g
 import open3d as o3d
 import supervisely_lib as sly
-from supervisely_lib.io.fs import get_file_name, get_file_name_with_ext
+from supervisely_lib.io.fs import get_file_name
 
 
 def las2pcd(input_path, output_path):
@@ -44,8 +44,9 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
             else:
                 shutil.move(file, datasets[0])
 
+    #progress = sly.Progress("Processing {} dataset".format(dataset_name), len(images_list), sly.logger)
     for dataset in datasets:
-        created_dataset = g.api.dataset.create(project.id, os.path.basename(os.path.normpath(dataset)), change_name_if_conflict=True)   # DS NAME
+        created_dataset = g.api.dataset.create(project.id, os.path.basename(os.path.normpath(dataset)), change_name_if_conflict=True)
         g.my_app.logger.info(f"Api create new dataset: {created_dataset.name}")
 
         pc_names = []
