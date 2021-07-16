@@ -44,24 +44,23 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
             else:
                 shutil.move(file, datasets[0])
 
-    #progress = sly.Progress("Processing {} dataset".format(dataset_name), len(images_list), sly.logger)
+
     for dataset in datasets:
         created_dataset = g.api.dataset.create(project.id, os.path.basename(os.path.normpath(dataset)), change_name_if_conflict=True)
-        g.my_app.logger.info(f"Api create new dataset: {created_dataset.name}")
+        g.my_app.logger.info(f"New dataset has been created: {created_dataset.name}")
 
-        pc_names = []
-        pc_paths = []
         ds_file_paths = os.listdir(dataset)
+        progress = sly.Progress(f"Processing {created_dataset.name} dataset", len(ds_file_paths), sly.logger)
         for ds_file_name in ds_file_paths:
             if ds_file_name.endswith(".las") or ds_file_name.endswith(".laz"):
                 input_path = os.path.join(dataset, ds_file_name)
                 output_path = os.path.join(dataset, get_file_name(ds_file_name) + ".pcd")
-                pc_names.append(get_file_name(ds_file_name) + ".pcd")
-                pc_paths.append(output_path)
                 las2pcd(input_path, output_path)
                 sly.fs.silent_remove(input_path)
+                api.pointcloud.upload_path(created_dataset.id, name=get_file_name(ds_file_name) + ".pcd", path=output_path)
+                progress.iter_done_report()
 
-        upload_info = api.pointcloud.upload_paths(created_dataset.id, names=pc_names, paths=pc_paths)
+        #upload_info = api.pointcloud.upload_paths(created_dataset.id, names=pc_names, paths=pc_paths)
         g.my_app.logger.info(f'LAS files has been successfully uploaded to dataset: {created_dataset.name}')
 
     g.my_app.stop()
