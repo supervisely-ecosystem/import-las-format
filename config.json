@@ -5,7 +5,7 @@
     "Import"
   ],
   "description": "Import LAS/LAZ format files to Supervisely 3D point cloud labeling tool",
-  "docker_image": "supervisely/import-ply-raw:6.1.4",
+  "docker_image": "supervisely/base-py-sdk:6.1.90",
   "main_script": "src/main.py",
   "modal_template": "src/modal.html",
   "modal_template_state": {
