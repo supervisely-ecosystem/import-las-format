@@ -32,8 +32,8 @@ File format designed for the interchange and archiving of lidar point cloud data
 .
 ├── directory_with_las_files
     ├── file_0000001.las  # 
-    ├── file_0000001.las  # Will be placed to the 1st dataset automatically
-    ├── file_0000001.las  # 
+    ├── file_0000002.las  # Will be placed to the 1st dataset automatically
+    ├── file_0000003.las  # 
     ├── las_dataset_1
     |	├── file_0000001.las
     |	├── file_0000002.las
