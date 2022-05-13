@@ -1,8 +1,9 @@
 {
-  "name": "Import LAS format",
+  "name": "Import LAS/LAZ format",
   "type": "app",
   "categories": [
-    "Import"
+    "import",
+    "pointclouds"
   ],
   "description": "Import LAS/LAZ format files to Supervisely 3D point cloud labeling tool",
   "docker_image": "supervisely/base-py-sdk:6.1.90",
