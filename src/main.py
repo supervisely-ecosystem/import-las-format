@@ -4,8 +4,8 @@ import shutil
 import numpy as np
 import globals as g
 import open3d as o3d
-import supervisely_lib as sly
-from supervisely_lib.io.fs import get_file_name
+import supervisely as sly
+from supervisely.io.fs import get_file_name
 
 
 def las2pcd(input_path, output_path):
@@ -19,15 +19,19 @@ def las2pcd(input_path, output_path):
 @sly.timeit
 def import_las(api: sly.Api, task_id, context, state, app_logger):
     storage_dir = g.my_app.data_dir
-    local_save_dir = os.path.join(storage_dir, os.path.basename(os.path.normpath(g.input_dir)))
-    api.file.download_directory(g.team_id, g.input_dir, local_save_dir)
+    if g.IS_ON_AGENT:
+        agent_id, curr_file_path = g.api.file.parse_agent_id_and_path(g.INPUT_DIR)
+        local_save_dir = os.path.join(storage_dir, os.path.basename(os.path.normpath(curr_file_path)))
+    else:
+        local_save_dir = os.path.join(storage_dir, os.path.basename(os.path.normpath(g.INPUT_DIR)))
+    api.file.download_directory(g.TEAM_ID, g.INPUT_DIR, local_save_dir)
 
-    if len(g.project_name) == 0:
+    if len(g.PROJECT_NAME) == 0:
         project_name = os.path.basename(os.path.normpath(local_save_dir))
     else:
-        project_name = g.project_name
+        project_name = g.PROJECT_NAME
 
-    project = g.api.project.create(g.workspace_id,
+    project = g.api.project.create(g.WORKSPACE_ID,
                                    project_name,
                                    type=sly.ProjectType.POINT_CLOUDS,
                                    change_name_if_conflict=True)
@@ -53,10 +57,11 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
         for ds_file_name in ds_file_paths:
             if ds_file_name.endswith(".las") or ds_file_name.endswith(".laz"):
                 input_path = os.path.join(dataset, ds_file_name)
-                output_path = os.path.join(dataset, get_file_name(ds_file_name) + ".pcd")
+                output_path = os.path.join(dataset, f"{get_file_name(ds_file_name)}.pcd")
                 las2pcd(input_path, output_path)
                 sly.fs.silent_remove(input_path)
-                api.pointcloud.upload_path(created_dataset.id, name=get_file_name(ds_file_name) + ".pcd", path=output_path)
+                api.pointcloud.upload_path(created_dataset.id, name=f"{get_file_name(ds_file_name)}.pcd", path=output_path)
+
                 progress.iter_done_report()
         g.my_app.logger.info(f'LAS files has been successfully uploaded to dataset: {created_dataset.name}')
 
@@ -65,8 +70,8 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
 
 def main():
     sly.logger.info("Script arguments", extra={
-        "TEAM_ID": g.team_id,
-        "WORKSPACE_ID": g.workspace_id
+        "TEAM_ID": g.TEAM_ID,
+        "WORKSPACE_ID": g.WORKSPACE_ID
     })
     g.my_app.run(initial_events=[{"command": "import_las"}])
 
