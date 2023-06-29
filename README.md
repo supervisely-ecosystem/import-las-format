@@ -57,14 +57,14 @@ File format designed for the interchange and archiving of lidar point cloud data
 
 **Step 2**:  Go to Current Team -> `Files` page, right-click on the directory with `.las/.laz` files and choose Run App -> `Import LAS format`.
 
-<img src="https://i.imgur.com/V63kbCP.png"/>
+<img src="media/htr2.png"/>
 
 **Step 3**: Type name of the resulting project into text input and press `Run` button.
 
-<img src="https://i.imgur.com/BgLvRct.png" width="600px"/>
+<img src="media/htr3.png" width="600px"/>
 
 **Note:** Your project will be placed to the current workspace with selected name.
 
-<img src="https://i.imgur.com/UF2VPis.png"/>
+<img src="media/htr3a.png"/>
 
 ###### Image credit: https://library.carleton.ca/guides/help/lidar-formats
