@@ -13,7 +13,7 @@
     "projectName": ""
   },
   "task_location": "workspace_tasks",
-  "icon": "https://i.imgur.com/2N4L6uU.png",
+  "icon": "media/icon.png",
   "icon_background": "#FFFFFF",
   "headless": true,
   "min_agent_version": "6.7.4",
