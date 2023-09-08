@@ -33,7 +33,8 @@ File format designed for the interchange and archiving of lidar point cloud data
 3. Go to `Team Files` -> `Supervisely Agent` and find your folder there.
 4. Right click to open context menu and start app. Now app will upload data directly from your computer to the platform.
 
-#### Structure of directory have to be the following:   
+#### Structure of directory have to be the following:<br>
+ℹ️ You can download the archive with data example [here](https://github.com/supervisely-ecosystem/import-las-format/files/12557787/my_las_project.zip).<br>
 ```
 .
 ├── directory_with_las_files
