@@ -35,20 +35,14 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
     else:
         project_name = g.PROJECT_NAME
 
-    project = g.api.project.create(
-        g.WORKSPACE_ID,
-        project_name,
-        type=sly.ProjectType.POINT_CLOUDS,
-        change_name_if_conflict=True,
-    )
+    project = None
 
     datasets = [d.path for d in os.scandir(local_save_dir) if d.is_dir()]
     files = [
         os.path.join(local_save_dir, file)
         for file in os.listdir(local_save_dir)
         if os.path.isfile(os.path.join(local_save_dir, file))
-        and file.endswith(".las")
-        or file.endswith(".laz")
+        and (file.endswith(".las") or file.endswith(".laz"))
     ]
     if len(files) >= 1:
         for file in files:
@@ -61,14 +55,12 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
 
     uploaded_pcd = 0
     for dataset in datasets:
-        created_dataset = g.api.dataset.create(
-            project.id, os.path.basename(os.path.normpath(dataset)), change_name_if_conflict=True
-        )
-        g.my_app.logger.info(f"New dataset has been created: {created_dataset.name}")
+        dataset_name = os.path.basename(os.path.normpath(dataset))
+        created_dataset = None
 
         ds_file_paths = os.listdir(dataset)
         progress = sly.Progress(
-            f"Processing {created_dataset.name} dataset files:", len(ds_file_paths), sly.logger
+            f"Processing {dataset_name} dataset files:", len(ds_file_paths), sly.logger
         )
         for ds_file_name in ds_file_paths:
             if ds_file_name.endswith(".las") or ds_file_name.endswith(".laz"):
@@ -80,6 +72,19 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
                         f"File {get_file_name(ds_file_name)} could not be converted to .pcd format. Skipping..."
                     )
                     continue
+                if project is None:
+                    project = g.api.project.create(
+                        g.WORKSPACE_ID,
+                        project_name,
+                        type=sly.ProjectType.POINT_CLOUDS,
+                        change_name_if_conflict=True,
+                    )
+                if created_dataset is None:
+                    created_dataset = g.api.dataset.create(
+                        project.id, dataset_name, change_name_if_conflict=True
+                    )
+                    g.my_app.logger.info(f"New dataset has been created: {created_dataset.name}")
+
                 sly.fs.silent_remove(input_path)
                 api.pointcloud.upload_path(
                     created_dataset.id, name=f"{get_file_name(ds_file_name)}.pcd", path=output_path
@@ -92,7 +97,6 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
                 progress.iter_done_report()
 
     if uploaded_pcd == 0:
-        api.project.remove(project.id)
         msg = "No LAS files were uploaded to Supervisely."
         description = "Please, the logs and your input data."
         g.my_app.logger.error(f"{msg} {description}")
