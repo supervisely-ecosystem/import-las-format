@@ -92,9 +92,10 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
                 progress.iter_done_report()
 
     if uploaded_pcd == 0:
+        api.project.remove(project.id)
         msg = "No LAS files were uploaded to Supervisely."
         description = "Please, the logs and your input data."
-        sly.logger.error(f"{msg} {description}")
+        g.my_app.logger.error(f"{msg} {description}")
         api.task.set_output_error(task_id, msg, description)
     g.my_app.stop()
 
