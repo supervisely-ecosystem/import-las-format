@@ -98,7 +98,7 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
 
     if uploaded_pcd == 0:
         msg = "No LAS files were uploaded to Supervisely."
-        description = "Please, the logs and your input data."
+        description = "Please, check the logs and your input data."
         g.my_app.logger.error(f"{msg} {description}")
         api.task.set_output_error(task_id, msg, description)
     g.my_app.stop()
