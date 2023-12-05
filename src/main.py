@@ -48,6 +48,7 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
             else:
                 shutil.move(file, datasets[0])
 
+    uploaded_pcd = 0
     for dataset in datasets:
         created_dataset = g.api.dataset.create(project.id, os.path.basename(os.path.normpath(dataset)), change_name_if_conflict=True)
         g.my_app.logger.info(f"New dataset has been created: {created_dataset.name}")
@@ -59,12 +60,22 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
                 input_path = os.path.join(dataset, ds_file_name)
                 output_path = os.path.join(dataset, f"{get_file_name(ds_file_name)}.pcd")
                 las2pcd(input_path, output_path)
+                if not sly.fs.file_exists(output_path):
+                    sly.logger.warn(f"File {get_file_name(ds_file_name)} could not be converted to .pcd format. Skipping...")
+                    continue
                 sly.fs.silent_remove(input_path)
                 api.pointcloud.upload_path(created_dataset.id, name=f"{get_file_name(ds_file_name)}.pcd", path=output_path)
+                uploaded_pcd += 1
+                sly.logger.info(f"File {get_file_name(ds_file_name)} has been successfully uploaded to dataset: {created_dataset.name}")
 
                 progress.iter_done_report()
         g.my_app.logger.info(f'LAS files has been successfully uploaded to dataset: {created_dataset.name}')
 
+    if uploaded_pcd == 0:
+        msg = "No LAS files were uploaded to Supervisely."
+        description = "Please, the logs and your input data."
+        sly.logger.error(f"{msg} {description}")
+        api.task.set_output_error(task_id, msg, description)
     g.my_app.stop()
 
 
