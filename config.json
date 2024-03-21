@@ -6,7 +6,7 @@
         "pointclouds"
     ],
     "description": "Import LAS/LAZ format files to Supervisely 3D point cloud labeling tool",
-    "docker_image": "supervisely/import-export:6.72.205",
+    "docker_image": "supervisely/import-export:6.74.45",
     "main_script": "src/main.py",
     "modal_template": "src/modal.html",
     "modal_template_state": {
@@ -17,7 +17,7 @@
     "icon_background": "#FFFFFF",
     "headless": true,
     "min_agent_version": "6.7.4",
-    "min_instance_version": "6.8.48",
+    "min_instance_version": "6.8.88",
     "context_menu": {
         "context_category": "Import",
         "target": [
