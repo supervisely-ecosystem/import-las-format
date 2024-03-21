@@ -4,3 +4,4 @@ src/debug
 /secret_debug.env
 .venv
 *.pyc
+.DS_Store
