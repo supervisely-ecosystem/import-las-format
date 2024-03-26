@@ -1,29 +1,29 @@
 {
-    "name": "Import LAS/LAZ format",
-    "type": "app",
-    "categories": [
-        "import",
-        "pointclouds"
-    ],
-    "description": "Import LAS/LAZ format files to Supervisely 3D point cloud labeling tool",
-    "docker_image": "supervisely/import-export:6.73.45",
-    "main_script": "src/main.py",
-    "modal_template": "src/modal.html",
-    "modal_template_state": {
-        "projectName": ""
-    },
-    "task_location": "workspace_tasks",
-    "icon": "https://i.imgur.com/2N4L6uU.png",
-    "icon_background": "#FFFFFF",
-    "headless": true,
-    "min_agent_version": "6.7.4",
-    "min_instance_version": "6.8.88",
-    "context_menu": {
-        "context_category": "Import",
-        "target": [
-            "files_folder",
-            "agent_folder"
-        ]
-    },
-    "poster": "https://user-images.githubusercontent.com/106374579/183419496-a06ad411-8a27-4213-8fbe-7af14c3fbd89.png"
+  "name": "Import LAS/LAZ format",
+  "type": "app",
+  "categories": [
+    "import",
+    "pointclouds"
+  ],
+  "description": "Import LAS/LAZ format files to Supervisely 3D point cloud labeling tool",
+  "docker_image": "supervisely/import-export:6.73.60",
+  "main_script": "src/main.py",
+  "modal_template": "src/modal.html",
+  "modal_template_state": {
+    "projectName": ""
+  },
+  "task_location": "workspace_tasks",
+  "icon": "https://i.imgur.com/2N4L6uU.png",
+  "icon_background": "#FFFFFF",
+  "headless": true,
+  "min_agent_version": "6.7.4",
+  "min_instance_version": "6.9.4",
+  "context_menu": {
+    "context_category": "Import",
+    "target": [
+      "files_folder",
+      "agent_folder"
+    ]
+  },
+  "poster": "https://user-images.githubusercontent.com/106374579/183419496-a06ad411-8a27-4213-8fbe-7af14c3fbd89.png"
 }
