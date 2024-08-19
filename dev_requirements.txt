@@ -1,4 +1,4 @@
-supervisely==6.73.160
+supervisely==6.73.162
 
 open3d==0.11.1
 scikit-learn==0.24.1
