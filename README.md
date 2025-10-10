@@ -12,7 +12,7 @@
 </p>
 
   
-[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervisely.com/apps/import-las-format)
+[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](../../../../supervisely-ecosystem/import-las-format)
 [![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervisely.com/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/import-las-format)
 [![views](https://app.supervisely.com/img/badges/views/supervisely-ecosystem/import-las-format.png)](https://supervisely.com)
@@ -54,7 +54,7 @@ File format designed for the interchange and archiving of lidar point cloud data
 **Note:** if there are no dataset folder in the main directory, all `.las/.laz` files inside main directory will be placed into created dataset.
 
 ## How To Run 
-**Step 1**: Add app to your team from [Ecosystem](https://ecosystem.supervisely.com/apps/import-las-format) if it is not there.
+**Step 1**: Add app to your team from [Ecosystem](../../../../supervisely-ecosystem/import-las-format) if it is not there.
 
 **Step 2**:  Go to Current Team -> `Files` page, right-click on the directory with `.las/.laz` files and choose Run App -> `Import LAS format`.
 
