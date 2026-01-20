@@ -1,9 +1,8 @@
+import json
 import os
 import shutil
 
-import laspy
-import numpy as np
-import open3d as o3d
+import pdal
 import supervisely as sly
 from supervisely.io.fs import get_file_name
 
@@ -11,30 +10,28 @@ import globals as g
 
 
 def las2pcd(input_path, output_path):
-    try:
-        las = laspy.read(input_path)
-    except Exception as e:
-        if "buffer size must be a multiple of element size" in str(e):
-            sly.logger.warn(
-                "Could not read LAS file in laspy. Trying to read it without EXTRA_BYTES..."
-            )
-            from laspy.point.record import PackedPointRecord
+    """
+    Convert LAS/LAZ to PCD using PDAL pipeline.
+    Streams data without loading everything into memory and preserves all metadata.
+    """
+    pipeline_json = json.dumps(
+        {
+            "pipeline": [
+                {"type": "readers.las", "filename": input_path},
+                {
+                    "type": "writers.pcd",
+                    "filename": output_path,
+                    "keep_unspecified": True,
+                    "compression": "binary",
+                },
+            ]
+        }
+    )
 
-            @classmethod
-            def from_buffer_without_extra_bytes(cls, buffer, point_format, count=-1, offset=0):
-                item_size = point_format.size
-                count = len(buffer) // item_size
-                points_dtype = point_format.dtype()
-                data = np.frombuffer(buffer, dtype=points_dtype, offset=offset, count=count)
-                return cls(data, point_format)
+    pipeline = pdal.Pipeline(pipeline_json)
+    count = pipeline.execute()
 
-            PackedPointRecord.from_buffer = from_buffer_without_extra_bytes
-            las = laspy.read(input_path)
-        else:
-            raise e
-    point_cloud = np.vstack((las.X, las.Y, las.Z)).T
-    pc = o3d.geometry.PointCloud(o3d.utility.Vector3dVector(point_cloud))
-    o3d.io.write_point_cloud(output_path, pc)
+    sly.logger.info(f"Converted {input_path} to {output_path} using PDAL ({count} points)")
 
 
 @g.my_app.callback("import_las")
