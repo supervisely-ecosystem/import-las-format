@@ -12,13 +12,13 @@ import globals as g
 
 def las2pcd(input_path: str, output_path: str) -> None:
     """
-    Convert a LAS point cloud to PCD format.
+    Convert a LAS/LAZ point cloud to PCD format.
 
-    The function reads a LAS file, applies coordinate scaling and offsets,
+    The function reads a LAS/LAZ file, applies coordinate scaling and offsets,
     recenters the point cloud to improve numerical stability, and writes
     the result to a PCD file compatible with common point cloud viewers.
 
-    :param input_path: Path to the input LAS file.
+    :param input_path: Path to the input LAS/LAZ file.
     :type input_path: str
     :param output_path: Path where the output PCD file will be written.
     :type output_path: str
@@ -147,6 +147,8 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
         )
         for input_path in ds_file_paths:
             if input_path.endswith(".las") or input_path.endswith(".laz"):
+                # Determine original format
+                original_format = "LAZ" if input_path.endswith(".laz") else "LAS"
                 output_path = os.path.join(dataset, f"{get_file_name(input_path)}.pcd")
                 las2pcd(input_path, output_path)
 
@@ -173,19 +175,23 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
                         f"New dataset has been created: {created_dataset.name} (ID: {created_dataset.id})"
                     )
 
+                sly.logger.info(
+                    f"Successfully converted {original_format} → PCD: {get_file_name(input_path)}.pcd"
+                )
+
                 sly.fs.silent_remove(input_path)
                 api.pointcloud.upload_path(
                     created_dataset.id, name=f"{get_file_name(input_path)}.pcd", path=output_path
                 )
                 uploaded_pcd += 1
                 g.my_app.logger.info(
-                    f"LAS File {get_file_name(input_path)} has been successfully uploaded to dataset: {created_dataset.name} (ID: {created_dataset.id})"
+                    f"Successfully uploaded {original_format} file '{get_file_name(input_path)}' as PCD to dataset '{created_dataset.name}' (ID: {created_dataset.id})"
                 )
 
                 progress.iter_done_report()
 
     if uploaded_pcd == 0:
-        msg = "No LAS files were uploaded to Supervisely."
+        msg = "No LAS/LAZ files were uploaded to Supervisely."
         description = "Please, check the logs and your input data."
         g.my_app.logger.error(f"{msg} {description}")
         api.task.set_output_error(task_id, msg, description)

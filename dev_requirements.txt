@@ -1,3 +1,3 @@
-supervisely[agent]==6.73.506
 laspy[laszip]==2.7.0
 pcd-py==0.2.0
+supervisely[agent]==6.73.506
