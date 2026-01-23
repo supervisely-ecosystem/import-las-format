@@ -31,7 +31,8 @@ def las2pcd(input_path: str, output_path: str) -> None:
     except Exception as e:
         if "buffer size must be a multiple of element size" in str(e):
             sly.logger.warning(
-                "Could not read LAS file in laspy. Trying to read it without EXTRA_BYTES..."
+                "LAS/LAZ file read failed due to buffer size mismatch with EXTRA_BYTES. "
+                "Retrying with EXTRA_BYTES disabled as a workaround..."
             )
             from laspy.point.record import PackedPointRecord
 
@@ -56,8 +57,17 @@ def las2pcd(input_path: str, output_path: str) -> None:
     # Build Nx3 point array
     pts = np.vstack((x, y, z)).T
 
+    # Check for empty point cloud
+    if len(pts) == 0:
+        sly.logger.warning(f"LAS file is empty (0 points): {get_file_name(input_path)}. Skipping...")
+        return
+    
     # Recenter point cloud to reduce floating point precision issues
     shift = pts.mean(axis=0)
+    sly.logger.info(
+        f"Applied coordinate shift for {get_file_name(input_path)}: "
+        f"X={shift[0]}, Y={shift[1]}, Z={shift[2]}"
+    )
     pts -= shift
 
     # Base PCD fields
@@ -70,10 +80,29 @@ def las2pcd(input_path: str, output_path: str) -> None:
 
     # Handle RGB attributes if present
     if hasattr(las, "red") and hasattr(las, "green") and hasattr(las, "blue"):
-        # Convert 16-bit LAS colors to 8-bit
-        r = (las.red >> 8).astype(np.uint32)
-        g = (las.green >> 8).astype(np.uint32)
-        b = (las.blue >> 8).astype(np.uint32)
+        # Convert LAS colors to 8-bit.
+        # Some files store 0–255 values in 16-bit fields; detect this and only shift when needed.
+        r_raw = np.asarray(las.red)
+        g_raw = np.asarray(las.green)
+        b_raw = np.asarray(las.blue)
+
+        # Determine if the values are full 16-bit range (0–65535) or already 0–255.
+        max_rgb = max(
+            r_raw.max(initial=0),
+            g_raw.max(initial=0),
+            b_raw.max(initial=0),
+        )
+
+        if max_rgb > 255:
+            # Typical LAS case: 16-bit colors; downscale to 8-bit.
+            r = (r_raw >> 8).astype(np.uint32)
+            g = (g_raw >> 8).astype(np.uint32)
+            b = (b_raw >> 8).astype(np.uint32)
+        else:
+            # Values are already in 0–255 range; use as-is.
+            r = r_raw.astype(np.uint32)
+            g = g_raw.astype(np.uint32)
+            b = b_raw.astype(np.uint32)
 
         # Pack RGB into a single float field (PCL-compatible)
         rgb = (r << 16) | (g << 8) | b
@@ -134,6 +163,15 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
 
     sly.logger.info(
         f"Starting to process {len(datasets)} dataset{'s' if len(datasets) > 1 else ''}: {datasets}"
+    )    
+    # Warning about coordinate shift
+    sly.logger.info(
+        "⚠️ IMPORTANT: Coordinate shift will be applied to all LAS/LAZ files during conversion to PCD format. "
+        "This is necessary to avoid floating-point precision issues and visual artifacts. "
+        "The shift values (X, Y, Z offsets) will be logged for each file. "
+        "If you need to convert annotations back to original LAS coordinates or use them with original LAS files, "
+        "you MUST add these shift values back to the PCD/annotation coordinates. "
+        "Check the logs for 'Applied coordinate shift' messages for each file."
     )
     uploaded_pcd = 0
     for dataset in datasets:
