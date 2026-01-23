@@ -5,7 +5,7 @@ import laspy
 import numpy as np
 import pcd_py
 import supervisely as sly
-from supervisely.io.fs import get_file_name
+from supervisely.io.fs import get_file_ext, get_file_name, get_file_name_with_ext
 
 import globals as g
 
@@ -24,6 +24,8 @@ def las2pcd(input_path: str, output_path: str) -> None:
     :type output_path: str
     :return: None
     """
+    input_file_name = get_file_name_with_ext(input_path)
+    sly.logger.info(f"Start processing file: {input_file_name}")
 
     # Read LAS file
     try:
@@ -31,7 +33,7 @@ def las2pcd(input_path: str, output_path: str) -> None:
     except Exception as e:
         if "buffer size must be a multiple of element size" in str(e):
             sly.logger.warning(
-                "LAS/LAZ file read failed due to buffer size mismatch with EXTRA_BYTES. "
+                f"{input_file_name} file read failed due to buffer size mismatch with EXTRA_BYTES. "
                 "Retrying with EXTRA_BYTES disabled as a workaround..."
             )
             from laspy.point.record import PackedPointRecord
@@ -59,13 +61,13 @@ def las2pcd(input_path: str, output_path: str) -> None:
 
     # Check for empty point cloud
     if len(pts) == 0:
-        sly.logger.warning(f"LAS file is empty (0 points): {get_file_name(input_path)}. Skipping...")
+        sly.logger.warning(f"{input_file_name} file is empty (0 points).")
         return
     
     # Recenter point cloud to reduce floating point precision issues
     shift = pts.mean(axis=0)
     sly.logger.info(
-        f"Applied coordinate shift for {get_file_name(input_path)}: "
+        f"Applied coordinate shift for {input_file_name}: "
         f"X={shift[0]}, Y={shift[1]}, Z={shift[2]}"
     )
     pts -= shift
@@ -192,7 +194,7 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
 
                 if not sly.fs.file_exists(output_path):
                     sly.logger.warning(
-                        f"File {get_file_name(input_path)} could not be converted to .pcd format. Skipping..."
+                        f"File {get_file_name_with_ext(input_path)} could not be converted to .pcd format. Skipping..."
                     )
                     continue
                 if project is None:
