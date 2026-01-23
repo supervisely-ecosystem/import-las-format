@@ -1,8 +1,6 @@
 <div align="center" markdown>
 <img src="https://user-images.githubusercontent.com/106374579/183419496-a06ad411-8a27-4213-8fbe-7af14c3fbd89.png"/>
 
-
-
 # Import LAS format
 
 <p align="center">
@@ -11,7 +9,6 @@
   <a href="#How-To-Use">How To Use</a>
 </p>
 
-  
 [![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervisely.com/apps/import-las-format)
 [![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervisely.com/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/import-las-format)
@@ -22,25 +19,27 @@
 
 ## Overview
 
-[LAS](https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities) (and its compressed counterpart LAZ), is a popular format for lidar point cloud and full waveform.
+[LAS](https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities) (and its compressed counterpart LAZ), is a popular format for LiDAR point cloud and full waveform.
 
-File format designed for the interchange and archiving of lidar point cloud data. It is an open, binary format specified by the American Society for Photogrammetry and Remote Sensing (ASPRS). The format is widely used and regarded as an industry standard for lidar data.
+File format designed for the interchange and archiving of LiDAR point cloud data. It is an open, binary format specified by the American Society for Photogrammetry and Remote Sensing (ASPRS). The format is widely used and regarded as an industry standard for LiDAR data.
 
 🏋️ Starting from version `v1.1.0` application supports import from special directory on your local computer. It is made for Enterprise Edition customers who need to upload tens or even hundreds of gigabytes of data without using drag-ang-drop mechanism:
 
 1. Run agent on your computer where data is stored. Watch [how-to video](https://youtu.be/aO7Zc4kTrVg).
-2. Copy your data to special folder on your computer that was created by agent. Agent mounts this directory to your Supervisely instance and it becomes accessible in Team Files. Learn more [in documentation](https://docs.supervisely.com/customization/agents/agent-storage). Watch [how-to video](https://youtu.be/63Kc8Xq9H0U).
-3. Go to `Team Files` -> `Supervisely Agent` and find your folder there.
+2. Copy your data to special folder on your computer that was created by agent. Agent mounts this directory to your Supervisely instance, and it becomes accessible in Team Files. Learn more [in documentation](https://docs.supervisely.com/customization/agents/agent-storage). Watch [how-to video](https://youtu.be/63Kc8Xq9H0U).
+3. Go to `Team Files` → `Supervisely Agent` and find your folder there.
 4. Right click to open context menu and start app. Now app will upload data directly from your computer to the platform.
 
 #### Structure of directory have to be the following:<br>
+
 ℹ️ You can download the archive with data example [here](https://github.com/supervisely-ecosystem/import-las-format/files/12557787/my_las_project.zip).<br>
+
 ```
 .
 ├── directory_with_las_files
-    ├── file_0000001.las  # 
+    ├── file_0000001.las  #
     ├── file_0000002.las  # Will be placed to the 1st dataset automatically
-    ├── file_0000003.las  # 
+    ├── file_0000003.las  #
     ├── las_dataset_1
     |	├── file_0000001.las
     |	├── file_0000002.las
@@ -51,12 +50,38 @@ File format designed for the interchange and archiving of lidar point cloud data
     |	├── ...
     └── ...
 ```
+
 **Note:** if there are no dataset folder in the main directory, all `.las/.laz` files inside main directory will be placed into created dataset.
 
-## How To Run 
+## ⚠️ Important: Coordinate Shift
+
+During LAS/LAZ to PCD conversion, **coordinate shift is automatically applied** to all point clouds. This is necessary to:
+
+- Avoid floating-point precision issues with large geodetic coordinates
+- Prevent visual artifacts and rendering problems
+- Ensure proper visualization in point cloud viewers
+
+The shift values (X, Y, Z offsets) are **logged for each converted file**. Look for messages like:
+
+```
+Applied coordinate shift for filename: X=1234567.89, Y=9876543.21, Z=123.45
+```
+
+**If you need to use annotations with original LAS files or convert back to LAS format:**
+
+- Save the shift values from the logs
+- Add these shift values back to your PCD/annotation coordinates to restore original geodetic coordinates:
+  ```
+  original_x = pcd_x + shift_x
+  original_y = pcd_y + shift_y
+  original_z = pcd_z + shift_z
+  ```
+
+## How To Run
+
 **Step 1**: Add app to your team from [Ecosystem](https://ecosystem.supervisely.com/apps/import-las-format) if it is not there.
 
-**Step 2**:  Go to Current Team -> `Files` page, right-click on the directory with `.las/.laz` files and choose Run App -> `Import LAS format`.
+**Step 2**: Go to Current Team → `Files` page, right-click on the directory with `.las/.laz` files and choose Run App → `Import LAS format`.
 
 <img src="https://i.imgur.com/V63kbCP.png"/>
 
