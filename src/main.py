@@ -1,37 +1,86 @@
-import json
 import os
 import shutil
 
-import pdal
+import laspy
+import numpy as np
+import pcd_py
 import supervisely as sly
 from supervisely.io.fs import get_file_name
 
 import globals as g
 
 
-def las2pcd(input_path, output_path):
+def las2pcd(input_path: str, output_path: str) -> None:
     """
-    Convert LAS/LAZ to PCD using PDAL pipeline.
-    Streams data without loading everything into memory and preserves all metadata.
+    Convert a LAS point cloud to PCD format.
+
+    The function reads a LAS file, applies coordinate scaling and offsets,
+    recenters the point cloud to improve numerical stability, and writes
+    the result to a PCD file compatible with common point cloud viewers.
+
+    :param input_path: Path to the input LAS file.
+    :type input_path: str
+    :param output_path: Path where the output PCD file will be written.
+    :type output_path: str
+    :return: None
     """
-    pipeline_json = json.dumps(
-        {
-            "pipeline": [
-                {"type": "readers.las", "filename": input_path},
-                {
-                    "type": "writers.pcd",
-                    "filename": output_path,
-                    "keep_unspecified": True,
-                    "compression": "binary",
-                },
-            ]
-        }
-    )
 
-    pipeline = pdal.Pipeline(pipeline_json)
-    count = pipeline.execute()
+    # Read LAS file
+    try:
+        las = laspy.read(input_path)
+    except Exception as e:
+        if "buffer size must be a multiple of element size" in str(e):
+            sly.logger.warning(
+                "Could not read LAS file in laspy. Trying to read it without EXTRA_BYTES..."
+            )
+            from laspy.point.record import PackedPointRecord
 
-    sly.logger.info(f"Converted {input_path} to {output_path} using PDAL ({count} points)")
+            @classmethod
+            def from_buffer_without_extra_bytes(cls, buffer, point_format, count=-1, offset=0):
+                item_size = point_format.size
+                count = len(buffer) // item_size
+                points_dtype = point_format.dtype()
+                data = np.frombuffer(buffer, dtype=points_dtype, offset=offset, count=count)
+                return cls(data, point_format)
+
+            PackedPointRecord.from_buffer = from_buffer_without_extra_bytes
+            las = laspy.read(input_path)
+        else:
+            raise
+
+    # Use scaled coordinates (scale and offset applied)
+    x = np.asarray(las.x, dtype=np.float64)
+    y = np.asarray(las.y, dtype=np.float64)
+    z = np.asarray(las.z, dtype=np.float64)
+
+    # Build Nx3 point array
+    pts = np.vstack((x, y, z)).T
+
+    # Recenter point cloud to reduce floating point precision issues
+    shift = pts.mean(axis=0)
+    pts -= shift
+
+    # Base PCD fields
+    data = {
+        "x": pts[:, 0].astype(np.float32),
+        "y": pts[:, 1].astype(np.float32),
+        "z": pts[:, 2].astype(np.float32),
+        "intensity": las.intensity.astype(np.float32),
+    }
+
+    # Handle RGB attributes if present
+    if hasattr(las, "red") and hasattr(las, "green") and hasattr(las, "blue"):
+        # Convert 16-bit LAS colors to 8-bit
+        r = (las.red >> 8).astype(np.uint32)
+        g = (las.green >> 8).astype(np.uint32)
+        b = (las.blue >> 8).astype(np.uint32)
+
+        # Pack RGB into a single float field (PCL-compatible)
+        rgb = (r << 16) | (g << 8) | b
+        data["rgb"] = rgb.view(np.float32)
+
+    # Write PCD file
+    pcd_py.write_pcd(output_path, data, format="binary_compressed")
 
 
 @g.my_app.callback("import_las")
@@ -100,8 +149,9 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
             if input_path.endswith(".las") or input_path.endswith(".laz"):
                 output_path = os.path.join(dataset, f"{get_file_name(input_path)}.pcd")
                 las2pcd(input_path, output_path)
+
                 if not sly.fs.file_exists(output_path):
-                    sly.logger.warn(
+                    sly.logger.warning(
                         f"File {get_file_name(input_path)} could not be converted to .pcd format. Skipping..."
                     )
                     continue
@@ -112,11 +162,16 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
                         type=sly.ProjectType.POINT_CLOUDS,
                         change_name_if_conflict=True,
                     )
+                    sly.logger.info(
+                        f"New project has been created: {project.name} (ID: {project.id})"
+                    )
                 if created_dataset is None:
                     created_dataset = g.api.dataset.create(
                         project.id, dataset_name, change_name_if_conflict=True
                     )
-                    g.my_app.logger.info(f"New dataset has been created: {created_dataset.name}")
+                    g.my_app.logger.info(
+                        f"New dataset has been created: {created_dataset.name} (ID: {created_dataset.id})"
+                    )
 
                 sly.fs.silent_remove(input_path)
                 api.pointcloud.upload_path(
@@ -124,7 +179,7 @@ def import_las(api: sly.Api, task_id, context, state, app_logger):
                 )
                 uploaded_pcd += 1
                 g.my_app.logger.info(
-                    f"LAS File {get_file_name(input_path)} has been successfully uploaded to dataset: {created_dataset.name}"
+                    f"LAS File {get_file_name(input_path)} has been successfully uploaded to dataset: {created_dataset.name} (ID: {created_dataset.id})"
                 )
 
                 progress.iter_done_report()
